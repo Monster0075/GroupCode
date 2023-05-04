@@ -21,24 +21,26 @@
                 theme: "isotope",
                 lineNumbers: true,
                 autoCloseBrackets: true,
-                autofocus: true,
+                fullScreen: true, 
             });
-            var width = window.width
-            editor.setSize(width, "700")
+           
         </script>
         <script>
-          const socket = io();
+            // Connect to the Socket.io server
+            const socket = io();
+        
 
-          socket.on('CODE_UPDATE', (code) => {
+        
+            // Listen for changes to the code
+            socket.on('code-update', (code) => {
             console.log(code)
             editor.setValue(code)
           })
 
           editor.on('change', (instance, changes) => {
-            const { origin } = changes;
-            console.log(changes)
-            if ( origin !== 'setValue') {
-              socket.emit('CODE_CHANGED', instance.getValue())
+            const { origin } = changes
+            if (origin !== 'setValue') {
+              socket.emit('code-change', instance.getValue())
             }
           })
           editor.on('cursorActivity', (instance) => {})
