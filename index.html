@@ -1,49 +1,61 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>CodeMirror</title>
+        <title>Group Code</title>
         <script src="codemirror\lib\codemirror.js"></script>
         <link href="codemirror\lib\codemirror.css" rel="stylesheet"/>
         <script src="codemirror/mode/javascript/javascript.js"></script>
         <script src="codemirror/addon/edit/closebrackets.js"></script>
         <link href="codemirror/theme/isotope.css" rel="stylesheet"/>
-        <script src="codemirror/addon/display/fullscreen.js"></script>
-        <link href="codemirror/addon/display/fullscreen.css" rel="stylesheet">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.js" integrity="sha512-xbQU0+iHqhVt7VIXi6vBJKPh3IQBF5B84sSHdjKiSccyX/1ZI7Vnkt2/8y8uruj63/DVmCxfUNohPNruthTEQA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-        
     </head>
-    <body>
+    <body style="background-color:Black;">
+        <button id="run-code" style="background-color: rgb(24, 193, 187);">Execute</button>
         <textarea id="editor"></textarea>
         <script>
-            var editor = CodeMirror.fromTextArea
-            (document.getElementById('editor'), {
+            var editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
                 mode: "javascript",
                 theme: "isotope",
                 lineNumbers: true,
                 autoCloseBrackets: true,
-                fullScreen: true, 
+                autofocus: true,
             });
-           
-        </script>
-        <script>
-            // Connect to the Socket.io server
+
+            var width = window.width
+            editor.setSize(width,"920")
+
+            var RunCode = document.getElementById("run-code");
+            RunCode.addEventListener("click", function() {
+                var code = editor.getValue();
+                try {
+                    var result = eval(code);
+                    console.log(result);
+                } catch (error) {
+                    console.error(error);
+                }
+            });
+
             const socket = io();
-        
 
-        
-            // Listen for changes to the code
-            socket.on('code-update', (code) => {
-            console.log(code)
-            editor.setValue(code)
-          })
+            socket.on('NewCode', (code) => {
+                editor.setValue(code)
+                //console.log("new code" , code)
+            });
 
-          editor.on('change', (instance, changes) => {
-            const { origin } = changes
-            if (origin !== 'setValue') {
-              socket.emit('code-change', instance.getValue())
-            }
-          })
-          editor.on('cursorActivity', (instance) => {})
+            editor.on('change', (instance, changes) => {
+                const { origin } = changes;
+                //uncomment the line below if you want to see the changes in the console
+                //console.log(changes)
+                if ( origin !== 'setValue') {
+                    socket.emit('ChangedCode', instance.getValue())
+                }
+            });
+
+            /*
+            editor.on('cursorActivity', (instance) => {
+                console.log(instance.cursorCoords())
+            });
+            */
         </script>
     </body>
 </html>
